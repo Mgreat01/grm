@@ -10,6 +10,56 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+
+// Define your database models here and run `prisma migrate dev` to create migrations for your database.
+// ---------------------------------------------------------------
+// les tables
+// ---------------------------------------------------------------
+
+model Utilisateur {
+  id             Int             @id @default(autoincrement())
+  noms_complet   String
+  email          String          @unique
+  motdepasse     String
+  type           String // "medecin", "patient", "receptionniste"
+  specialiteId   Int?
+  specialite     Specialite?     @relation(fields: [specialiteId], references: [id])
+  disponibilites Disponibilite[]
+  rendezVous     RendezVous[]    @relation("MedecinRdv")
+}
+
+model Specialite {
+  id          Int           @id @default(autoincrement())
+  nom         String
+  utilisateur Utilisateur[]
+}
+
+model Disponibilite {
+  id          Int         @id @default(autoincrement())
+  medecinId   Int
+  date        DateTime
+  heure_debut String
+  heure_fin   String
+  medecin     Utilisateur @relation(fields: [medecinId], references: [id])
+}
+
+model RendezVous {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique
+  nom_patient    String
+  email_patient  String
+  numero_patient String
+  symptome       String
+  statut         String       @default("en_attente")
+  presence       Boolean?     @default(false)
+  date_rdv       DateTime?
+  heure_rdv      DateTime?
+  specialiteId   Int?
+  medecinId      Int?
+  medecin        Utilisateur? @relation("MedecinRdv", fields: [medecinId], references: [id])
+  date_creation  DateTime     @default(now())
 }
