@@ -10,31 +10,42 @@ export const inscriptionUtilisateur = async (req, res) => {
   try {
     const { noms_complet, email, motdepasse, type, specialiteId } = req.body;
 
-    // Vérification si l’utilisateur existe déjà
-    const utilisateurExistant = await prisma.utilisateur.findUnique({
-      where: { email },
-    });
-    if (utilisateurExistant)
+    // Vérifier si l'email est déjà utilisé
+    const utilisateurExistant = await prisma.utilisateur.findUnique({ where: { email } });
+    if (utilisateurExistant) {
       return res.status(400).json({ message: "Email déjà utilisé." });
+    }
+
+    // Vérifier le type d'utilisateur
+    const typesAutorises = ["medecin", "patient", "receptionniste"];
+    if (!typesAutorises.includes(type)) {
+      return res.status(400).json({ message: "Type d'utilisateur invalide." });
+    }
 
     // Hash du mot de passe
     const hash = await bcrypt.hash(motdepasse, 10);
 
-    // Création avec statut inactif
+    // Création de l'utilisateur
     const utilisateur = await prisma.utilisateur.create({
       data: {
         noms_complet,
         email,
         motdepasse: hash,
         type,
-        specialiteId: specialiteId || null,
-        actif: false, // l'admin doit l'activer
+        specialiteId: type === "medecin" ? specialiteId || null : null,
+        estActif: false, // activation par l'admin
       },
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "Inscription réussie. En attente d’activation par l’administrateur.",
-      utilisateur,
+      utilisateur: {
+        id: utilisateur.id,
+        noms_complet: utilisateur.noms_complet,
+        email: utilisateur.email,
+        type: utilisateur.type,
+        estActif: utilisateur.estActif,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -73,8 +84,25 @@ export const getProfilUtilisateur = async (req, res) => {
   try {
     const utilisateur = await prisma.utilisateur.findUnique({
       where: { id: req.user.id },
+      include: {
+        specialite: {
+          select: { nom: true },
+        },
+      },
     });
-    res.json(utilisateur);
+
+    if (!utilisateur) {
+      return res.status(404).json({ message: "Profil introuvable." });
+    }
+
+    res.json({
+      id: utilisateur.id,
+      noms_complet: utilisateur.noms_complet,
+      email: utilisateur.email,
+      type: utilisateur.type,
+      estActif: utilisateur.estActif,
+      specialite: utilisateur.specialite?.nom || null,
+    });
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur." });
   }
