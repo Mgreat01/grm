@@ -1,18 +1,37 @@
 import { PrismaClient } from "@prisma/client";
+import crypto from "crypto";
+
 const prisma = new PrismaClient();
 
 // === GESTION DES RENDEZ-VOUS ===
 export const createRendezVous = async (req, res) => {
   try {
-    const { patientId, medecinId, date, heure, statut } = req.body;
+    const {
+      nom_patient,
+      email_patient,
+      numero_patient,
+      symptome,
+      date_rdv,
+      heure_rdv,
+      specialiteId,
+      medecinId,
+    } = req.body;
+
+    // Générer un UUID unique
+    const uuid = crypto.randomUUID();
 
     const rdv = await prisma.rendezVous.create({
       data: {
-        patientId,
+        uuid,
+        nom_patient,
+        email_patient,
+        numero_patient,
+        symptome,
+        date_rdv: new Date(date_rdv),
+        heure_rdv: new Date(heure_rdv),
+        specialiteId,
         medecinId,
-        date,
-        heure,
-        statut: statut || "en_attente", // ⚠️ cohérent avec ton schéma (par défaut "en_attente")
+        statut: "en_attente",
       },
     });
 
@@ -25,11 +44,27 @@ export const createRendezVous = async (req, res) => {
 export const updateRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
-    const { date, heure, statut } = req.body;
+    const {
+      date_rdv,
+      heure_rdv,
+      statut,
+      presence,
+      symptome,
+      specialiteId,
+      medecinId,
+    } = req.body;
 
     const rdv = await prisma.rendezVous.update({
       where: { id: parseInt(id) },
-      data: { date, heure, statut },
+      data: {
+        date_rdv: date_rdv ? new Date(date_rdv) : undefined,
+        heure_rdv: heure_rdv ? new Date(heure_rdv) : undefined,
+        statut,
+        presence,
+        symptome,
+        specialiteId,
+        medecinId,
+      },
     });
 
     res.json({ message: "Rendez-vous mis à jour", rdv });
@@ -41,7 +76,12 @@ export const updateRendezVous = async (req, res) => {
 export const deleteRendezVous = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.rendezVous.delete({ where: { id: parseInt(id) } });
+
+    const rdv = await prisma.rendezVous.findUnique({ where: { id: parseInt(id) } });
+    if (!rdv) return res.status(404).json({ error: "Rendez-vous introuvable" });
+
+    await prisma.rendezVous.delete({ where: { id: rdv.id } });
+
     res.json({ message: "Rendez-vous annulé" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -52,12 +92,22 @@ export const getAllRendezVous = async (req, res) => {
   try {
     const rdvs = await prisma.rendezVous.findMany({
       include: {
-        // ⚠️ Vérifie ton schéma : actuellement RendezVous n’a pas de relation "patient"
-        // Tu peux inclure "medecin" et "specialite" qui existent déjà
-        medecin: true,
-        specialite: true,
+        medecin: {
+          select: {
+            noms_complet: true,
+            email: true,
+            specialite: {
+              select: { nom: true },
+            },
+          },
+        },
+        specialite: {
+          select: { nom: true },
+        },
       },
+      orderBy: { date_rdv: "desc" },
     });
+
     res.json(rdvs);
   } catch (error) {
     res.status(500).json({ error: error.message });
