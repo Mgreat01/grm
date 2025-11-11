@@ -1,23 +1,48 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
+import bcrypt from 'bcrypt';
 
-// === GESTION DES UTILISATEURS ===
+
 export const createUtilisateurByAdmin = async (req, res) => {
   try {
     const { noms_complet, email, motdepasse, type, specialiteId } = req.body;
+
+    if (!noms_complet || !email || !motdepasse || !type) {
+      return res.status(400).json({ error: "Les champs noms_complet, email, motdepasse et type sont requis." });
+    }
+
+    const typesAutorises = ["medecin", "patient", "receptionniste"];
+    if (!typesAutorises.includes(type)) {
+      return res.status(400).json({ error: `Le type doit être l'un des suivants: ${typesAutorises.join(', ')}.` });
+    }
+
+    let specialiteData = undefined;
+    if (specialiteId) {
+      const specialite = await prisma.specialite.findUnique({
+        where: { id: parseInt(specialiteId, 10) },
+      });
+      if (!specialite) {
+        return res.status(404).json({ error: "La spécialité spécifiée n'existe pas." });
+      }
+      specialiteData = { connect: { id: parseInt(specialiteId, 10) } };
+    }
+
+    const motdepasseHash = await bcrypt.hash(motdepasse, 10);
+
     const utilisateur = await prisma.utilisateur.create({
       data: {
         noms_complet,
         email,
-        motdepasse,
+        motdepasse: motdepasseHash,
         type,
-        specialiteId,
-        estActif: true,
+        ...(specialiteData ? { specialite: specialiteData } : {}),
       },
     });
+
     res.status(201).json({ message: "Utilisateur créé avec succès", utilisateur });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur lors de la création de l'utilisateur:", error);
+    res.status(500).json({ error: error.message || "Une erreur interne est survenue." });
   }
 };
 
@@ -37,9 +62,9 @@ export const activerUtilisateur = async (req, res) => {
 // === GESTION DES SPÉCIALITÉS ===
 export const createSpecialite = async (req, res) => {
   try {
-    const { nom, description } = req.body;
+    const {nom} = req.body;
     const specialite = await prisma.specialite.create({
-      data: { nom, description },
+      data: {nom},
     });
     res.status(201).json({ message: "Spécialité créée avec succès", specialite });
   } catch (error) {
@@ -59,10 +84,10 @@ export const getSpecialites = async (req, res) => {
 export const updateSpecialite = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nom, description } = req.body;
+    const { nom } = req.body;
     const specialite = await prisma.specialite.update({
       where: { id: parseInt(id) },
-      data: { nom, description },
+      data: { nom },
     });
     res.json({ message: "Spécialité mise à jour", specialite });
   } catch (error) {
