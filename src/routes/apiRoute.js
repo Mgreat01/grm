@@ -38,23 +38,11 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags:
- *   - name: Admin
- *     description: Gestion des utilisateurs et spécialités
- *   - name: Médecin
- *     description: Gestion des disponibilités et des rendez-vous
- *   - name: Réceptionniste
- *     description: Gestion des rendez-vous patients
- *   - name: Utilisateur
- *     description: Authentification & Profil utilisateur
- */
-
-/**
- * @swagger
  * /admin/utilisateurs:
  *   post:
  *     tags: [Admin]
  *     summary: Créer un utilisateur (admin)
+ *     description: Permet à l’administrateur de créer un compte pour un médecin, un patient ou une réceptionniste.
  *     requestBody:
  *       required: true
  *       content:
@@ -69,44 +57,48 @@ const router = express.Router();
  *             properties:
  *               noms_complet:
  *                 type: string
- *                 example: "Jean Dupont"
+ *                 example: "Dr. Alice Kabeya"
  *               email:
  *                 type: string
- *                 example: "jean.dupont@gmail.com"
+ *                 example: "alice.kabeya@hopital-rdc.com"
  *               motdepasse:
  *                 type: string
- *                 example: "Passer123!"
+ *                 example: "SecurePass123!"
  *               type:
  *                 type: string
  *                 enum: [medecin, patient, receptionniste]
  *                 example: "medecin"
  *               specialiteId:
  *                 type: integer
- *                 example: 1
- *                 description: "Requis si type = medecin"
+ *                 example: 3
+ *                 description: "Obligatoire si type = medecin"
  *     responses:
  *       201:
- *         description: Utilisateur créé
+ *         description: Utilisateur créé avec succès
  *       400:
- *         description: Champs manquants ou type invalide
+ *         description: Données manquantes ou type invalide
  *       404:
- *         description: Spécialité non trouvée
+ *         description: Spécialité introuvable
  */
-
 
 /**
  * @swagger
  * /admin/utilisateurs/{id}/activer:
  *   patch:
  *     tags: [Admin]
- *     summary: Activer un utilisateur
+ *     summary: Activer un compte utilisateur
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID de l'utilisateur à activer
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
- *         description: Compte activé
+ *         description: Compte activé avec succès
+ *       404:
+ *         description: Utilisateur introuvable
  */
 
 /**
@@ -114,17 +106,29 @@ const router = express.Router();
  * /admin/specialites:
  *   post:
  *     tags: [Admin]
- *     summary: Créer une spécialité
+ *     summary: Créer une spécialité médicale
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nom
+ *             properties:
+ *               nom:
+ *                 type: string
+ *                 example: "Cardiologie"
  *     responses:
  *       201:
- *         description: Spécialité créée
+ *         description: Spécialité créée avec succès
  *
  *   get:
  *     tags: [Admin]
  *     summary: Liste des spécialités
  *     responses:
  *       200:
- *         description: OK
+ *         description: Liste des spécialités récupérée
  */
 
 /**
@@ -133,9 +137,26 @@ const router = express.Router();
  *   put:
  *     tags: [Admin]
  *     summary: Modifier une spécialité
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nom:
+ *                 type: string
+ *                 example: "Neurologie"
+ *     responses:
+ *       200:
+ *         description: Spécialité mise à jour
+ *
  *   delete:
  *     tags: [Admin]
  *     summary: Supprimer une spécialité
+ *     responses:
+ *       204:
+ *         description: Spécialité supprimée
  */
 
 /**
@@ -144,6 +165,30 @@ const router = express.Router();
  *   post:
  *     tags: [Médecin]
  *     summary: Créer une disponibilité
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - date
+ *               - heure_debut
+ *               - heure_fin
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-12-10"
+ *               heure_debut:
+ *                 type: string
+ *                 example: "09:00"
+ *               heure_fin:
+ *                 type: string
+ *                 example: "12:00"
+ *     responses:
+ *       201:
+ *         description: Disponibilité créée
  */
 
 /**
@@ -152,6 +197,15 @@ const router = express.Router();
  *   get:
  *     tags: [Médecin]
  *     summary: Obtenir les disponibilités d’un médecin
+ *     parameters:
+ *       - in: path
+ *         name: medecinId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Disponibilités récupérées
  */
 
 /**
@@ -160,6 +214,15 @@ const router = express.Router();
  *   delete:
  *     tags: [Médecin]
  *     summary: Supprimer une disponibilité
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Disponibilité supprimée
  */
 
 /**
@@ -168,6 +231,15 @@ const router = express.Router();
  *   get:
  *     tags: [Médecin]
  *     summary: Liste des rendez-vous du médecin
+ *     parameters:
+ *       - in: path
+ *         name: medecinId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Liste des rendez-vous récupérée
  */
 
 /**
@@ -176,9 +248,44 @@ const router = express.Router();
  *   post:
  *     tags: [Réceptionniste]
  *     summary: Créer un rendez-vous
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nom_patient
+ *               - email_patient
+ *               - numero_patient
+ *               - symptome
+ *               - specialiteId
+ *             properties:
+ *               nom_patient:
+ *                 type: string
+ *                 example: "Patrick Lumbala"
+ *               email_patient:
+ *                 type: string
+ *                 example: "patrick@gmail.com"
+ *               numero_patient:
+ *                 type: string
+ *                 example: "+243810000000"
+ *               symptome:
+ *                 type: string
+ *                 example: "Fièvre persistante"
+ *               specialiteId:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       201:
+ *         description: Rendez-vous créé
+ *
  *   get:
  *     tags: [Réceptionniste]
  *     summary: Voir tous les rendez-vous
+ *     responses:
+ *       200:
+ *         description: Liste récupérée
  */
 
 /**
@@ -187,9 +294,16 @@ const router = express.Router();
  *   put:
  *     tags: [Réceptionniste]
  *     summary: Modifier un rendez-vous
+ *     responses:
+ *       200:
+ *         description: Rendez-vous modifié
+ *
  *   delete:
  *     tags: [Réceptionniste]
  *     summary: Supprimer un rendez-vous
+ *     responses:
+ *       204:
+ *         description: Rendez-vous supprimé
  */
 
 /**
@@ -198,6 +312,29 @@ const router = express.Router();
  *   post:
  *     tags: [Utilisateur]
  *     summary: Inscription utilisateur
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - noms_complet
+ *               - email
+ *               - motdepasse
+ *             properties:
+ *               noms_complet:
+ *                 type: string
+ *                 example: "Marie Tshianda"
+ *               email:
+ *                 type: string
+ *                 example: "marie.tshianda@gmail.com"
+ *               motdepasse:
+ *                 type: string
+ *                 example: "MotDePasse@2025"
+ *     responses:
+ *       201:
+ *         description: Compte créé avec succès
  */
 
 /**
@@ -206,6 +343,27 @@ const router = express.Router();
  *   post:
  *     tags: [Utilisateur]
  *     summary: Connexion utilisateur
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - motdepasse
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "marie.tshianda@gmail.com"
+ *               motdepasse:
+ *                 type: string
+ *                 example: "MotDePasse@2025"
+ *     responses:
+ *       200:
+ *         description: Connexion réussie
+ *       401:
+ *         description: Identifiants incorrects
  */
 
 /**
@@ -213,10 +371,17 @@ const router = express.Router();
  * /utilisateurs/profil:
  *   get:
  *     tags: [Utilisateur]
- *     summary: Voir le profil
+ *     summary: Voir le profil de l’utilisateur connecté
+ *     responses:
+ *       200:
+ *         description: Informations du profil
+ *
  *   put:
  *     tags: [Utilisateur]
- *     summary: Modifier le profil
+ *     summary: Modifier le profil utilisateur
+ *     responses:
+ *       200:
+ *         description: Profil mis à jour
  */
 
 
