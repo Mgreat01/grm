@@ -59,25 +59,47 @@ export const connexionUtilisateur = async (req, res) => {
     const { email, motdepasse } = req.body;
 
     const utilisateur = await prisma.utilisateur.findUnique({ where: { email } });
-    if (!utilisateur)
+    if (!utilisateur) {
       return res.status(404).json({ message: "Utilisateur introuvable." });
+    }
 
-    if (!utilisateur.actif)
+    if (!utilisateur.estActif) {
       return res.status(403).json({ message: "Compte non activé par l’administrateur." });
+    }
+
+    console.log("Utilisateur trouvé:", utilisateur);
+   
+
 
     const valid = await bcrypt.compare(motdepasse, utilisateur.motdepasse);
-    if (!valid)
+    if (!valid) {
       return res.status(401).json({ message: "Mot de passe incorrect." });
+    }
 
-    const token = jwt.sign({ id: utilisateur.id, role: utilisateur.type }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET non défini");
+    }
 
-    res.json({ message: "Connexion réussie", token });
+    const token = jwt.sign(
+      { id: utilisateur.id, role: utilisateur.type },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const user = {
+      id: utilisateur.id,
+      noms_complet: utilisateur.noms_complet,
+      email: utilisateur.email,
+      type: utilisateur.type,
+    };
+
+    return res.json({ message: "Connexion réussie", token , user });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur." });
+    console.error("Erreur connexionUtilisateur:", error);
+    return res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
 
 //  Afficher le profil
 export const getProfilUtilisateur = async (req, res) => {
