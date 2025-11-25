@@ -35,7 +35,7 @@ export const createUtilisateurByAdmin = async (req, res) => {
         email,
         motdepasse: motdepasseHash,
         type,
-        estActif: false,
+        estActif: true,
         ...(specialiteData ? { specialite: specialiteData } : {}),
       },
     });
