@@ -6,9 +6,11 @@ export const createDisponibilite = async (req, res) => {
   try {
     const { medecinId, date, heure_debut, heure_fin } = req.body;
 
+    const idMed = parseInt(medecinId);
+
     // Vérifier que le médecin existe et est actif
     const medecin = await prisma.utilisateur.findUnique({
-      where: { id: medecinId },
+      where: { id: idMed },
     });
 
     if (!medecin || medecin.type !== "medecin" || !medecin.estActif) {
@@ -17,7 +19,7 @@ export const createDisponibilite = async (req, res) => {
 
     const disponibilite = await prisma.disponibilite.create({
       data: {
-        medecinId,
+        medecinId: idMed,
         date: new Date(date),
         heure_debut,
         heure_fin,
@@ -29,6 +31,7 @@ export const createDisponibilite = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 export const getDisponibilitesByMedecin = async (req, res) => {
   try {
