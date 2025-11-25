@@ -66,9 +66,14 @@ export const getRendezVousMedecin = async (req, res) => {
       where: { medecinId: parseInt(medecinId) },
       include: {
         medecin: {
-          select: { noms_complet: true, email: true, specialite: true },
-        },
-        specialite: true,
+          select: {
+            noms_complet: true,
+            email: true,
+            specialite: {
+              select: { nom: true }
+            }
+          }
+        }
       },
       orderBy: { date_rdv: "asc" },
     });
