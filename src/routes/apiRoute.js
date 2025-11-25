@@ -22,6 +22,7 @@ import {
   updateRendezVous,
   deleteRendezVous,
   getAllRendezVous,
+  getAllMedecins,
 } from "../controllers/receptionnisteController.js";
 
 import {
@@ -419,6 +420,7 @@ router.post("/receptionnistes/rendezvous", createRendezVous);
 router.put("/receptionnistes/rendezvous/:id", updateRendezVous);
 router.delete("/receptionnistes/rendezvous/:id", deleteRendezVous);
 router.get("/receptionnistes/rendezvous", getAllRendezVous);
+router.get("/receptionnistes/medecins", getAllMedecins);
 
 // ===========================================================
 //  UTILISATEUR (GÉNÉRAL)
