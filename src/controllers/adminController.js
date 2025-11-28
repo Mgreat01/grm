@@ -50,11 +50,28 @@ export const createUtilisateurByAdmin = async (req, res) => {
 export const activerUtilisateur = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Récupérer l'utilisateur actuel
+    const utilisateurActuel = await prisma.utilisateur.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!utilisateurActuel) {
+      return res.status(404).json({ error: "Utilisateur non trouvé" });
+    }
+
+    // Inverser l'état actuel
     const utilisateur = await prisma.utilisateur.update({
       where: { id: parseInt(id) },
-      data: { estActif: true },
+      data: { estActif: !utilisateurActuel.estActif },
     });
-    res.json({ message: "Utilisateur activé", utilisateur });
+
+    res.json({
+      message: utilisateur.estActif
+        ? "Utilisateur activé"
+        : "Utilisateur désactivé",
+      utilisateur,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -101,6 +118,65 @@ export const deleteSpecialite = async (req, res) => {
     const { id } = req.params;
     await prisma.specialite.delete({ where: { id: parseInt(id) } });
     res.json({ message: "Spécialité supprimée" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+export const createAdminUser = async (req, res) => {
+  try {
+    const { noms_complet, email, motdepasse } = req.body;
+
+    if (!noms_complet || !email || !motdepasse) {
+      return res.status(400).json({ error: "Les champs noms_complet, email et motdepasse sont requis." });
+    }
+    const motdepasseHash = await bcrypt.hash(motdepasse, 10);
+
+    const utilisateur = await prisma.utilisateur.create({
+      data: {
+        noms_complet,
+        email,
+        motdepasse: motdepasseHash,
+        type: "admin",
+        estActif: true,
+      },
+    })
+    res.status(201).json({ message: "Utilisateur admin créé avec succès", utilisateur });
+  
+  }
+  catch (error) {
+    console.error("Erreur lors de la création de l'utilisateur admin:", error);
+    res.status(500).json({ error: error.message || "Une erreur interne est survenue." });
+  }
+}
+
+export const getAllUtilisateurs = async (req, res) => {
+  try {
+    // Récupérer page et limite depuis la query string (ex: ?page=2&limit=10)
+    const page = parseInt(req.query.page) || 1;   // page courante (par défaut 1)
+    const limit = parseInt(req.query.limit) || 10; // nombre d'éléments par page (par défaut 10)
+
+    // Calculer combien sauter
+    const skip = (page - 1) * limit;
+
+    // Récupérer les utilisateurs avec pagination
+    const utilisateurs = await prisma.utilisateur.findMany({
+      skip,
+      take: limit,
+      orderBy: { id: "asc" }, // optionnel : trier par id
+    });
+
+    // Compter le total pour calculer le nombre de pages
+    const total = await prisma.utilisateur.count();
+
+    res.json({
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      utilisateurs,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
