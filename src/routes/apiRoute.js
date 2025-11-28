@@ -8,6 +8,8 @@ import {
   getSpecialites,
   updateSpecialite,
   deleteSpecialite,
+  createAdminUser,
+  getAllUtilisateurs,
 } from "../controllers/adminController.js";
 
 import {
@@ -389,6 +391,8 @@ const router = express.Router();
 
 // ===========================================================
 //  ADMIN ROUTES
+// router.post("/admin/userss", createAdminUser);
+router.get("/admin/users", getAllUtilisateurs);
 // ===========================================================
 
 // --- Gestion des utilisateurs ---
