@@ -47,6 +47,7 @@ export const createUtilisateurByAdmin = async (req, res) => {
   }
 };
 
+
 export const activerUtilisateur = async (req, res) => {
   try {
     const { id } = req.params;
