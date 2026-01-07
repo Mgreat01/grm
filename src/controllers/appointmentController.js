@@ -5,8 +5,7 @@ const AutoReservation = async (req, res) => {
         // 1. On récupère les données envoyées par le Front-end
         const { nom_patient, email_patient, numero_patient, symptomeIds } = req.body;
 
-        // 2. On appelle le micro-service IA (qui tourne sur le port 3001)
-        // Note: l'URL doit correspondre à ce qu'on a défini dans le micro-service
+        // 2. On envoie les données au micro-service d'IA pour traitement
         const aiServiceUrl = 'http://localhost:3001/api/ai/process';
 
         const response = await axios.post(aiServiceUrl, {

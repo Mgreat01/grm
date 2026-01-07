@@ -34,6 +34,10 @@ import {
   updateProfilUtilisateur,
 } from "../controllers/utilisateurController.js";
 
+import {
+AutoReservation
+} from "../controllers/appointmentController.js"
+
 const router = express.Router();
 
 
@@ -425,6 +429,12 @@ router.put("/receptionnistes/rendezvous/:id", updateRendezVous);
 router.delete("/receptionnistes/rendezvous/:id", deleteRendezVous);
 router.get("/receptionnistes/rendezvous", getAllRendezVous);
 router.get("/receptionnistes/medecins", getAllMedecins);
+
+// ===========================================================
+// patient ROUTES
+// ===========================================================
+
+ router.post('/auto-schedule', AutoReservation);
 
 // ===========================================================
 //  UTILISATEUR (GÉNÉRAL)
