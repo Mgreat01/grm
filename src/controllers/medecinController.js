@@ -6,12 +6,19 @@ export const createDisponibilite = async (req, res) => {
   try {
     const { medecinId, date, heure_debut, heure_fin } = req.body;
 
-    const idMed = parseInt(medecinId);
+    // 1. Validation de la présence des données
+    if (!date || !heure_debut || !heure_fin) {
+        return res.status(400).json({ error: "Tous les champs (date, heure début/fin) sont requis." });
+    }
 
-    // Vérifier que le médecin existe et est actif
-    const medecin = await prisma.utilisateur.findUnique({
-      where: { id: idMed },
-    });
+    // 2. Validation du format de la date
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+        return res.status(400).json({ error: "Le format de la date est invalide." });
+    }
+
+    const idMed = parseInt(medecinId);
+    const medecin = await prisma.utilisateur.findUnique({ where: { id: idMed } });
 
     if (!medecin || medecin.type !== "medecin" || !medecin.estActif) {
       return res.status(400).json({ error: "Médecin invalide ou inactif" });
@@ -20,7 +27,7 @@ export const createDisponibilite = async (req, res) => {
     const disponibilite = await prisma.disponibilite.create({
       data: {
         medecinId: idMed,
-        date: new Date(date),
+        date: dateObj, // Utilise l'objet validé
         heure_debut,
         heure_fin,
       },
