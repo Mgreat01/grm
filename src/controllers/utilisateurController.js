@@ -67,7 +67,7 @@ export const connexionUtilisateur = async (req, res) => {
       return res.status(403).json({ message: "Compte non activé par l’administrateur." });
     }
 
-    console.log("Utilisateur trouvé:", utilisateur);
+    console.log("Utilisateur trouvé:", utilisateur.noms_complet);
    
 
 
