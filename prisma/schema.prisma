@@ -45,6 +45,7 @@ model Symptome {
   id           Int           @id @default(autoincrement())
   nom          String        @unique
   specialites  Specialite[]  @relation("SymptomeToSpecialite")
+  rendezVous   RendezVous[]  @relation("RdvToSymptomes")
 }
 
 model Disponibilite {
@@ -62,7 +63,7 @@ model RendezVous {
   nom_patient    String
   email_patient  String
   numero_patient String
-  symptome       String       // Stockera le nom du symptôme choisi
+  symptomes      Symptome[]   @relation("RdvToSymptomes")
   statut         String       @default("en_attente")
   presence       Boolean?     @default(false)
   date_rdv       DateTime?
