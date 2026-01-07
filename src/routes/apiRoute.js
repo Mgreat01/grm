@@ -25,6 +25,7 @@ import {
   deleteRendezVous,
   getAllRendezVous,
   getAllMedecins,
+  getSymptomes,
 } from "../controllers/receptionnisteController.js";
 
 import {
@@ -429,6 +430,7 @@ router.put("/receptionnistes/rendezvous/:id", updateRendezVous);
 router.delete("/receptionnistes/rendezvous/:id", deleteRendezVous);
 router.get("/receptionnistes/rendezvous", getAllRendezVous);
 router.get("/receptionnistes/medecins", getAllMedecins);
+router.get("/receptionnistes/symptomes", getSymptomes);
 
 // ===========================================================
 // patient ROUTES
