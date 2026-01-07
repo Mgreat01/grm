@@ -30,13 +30,21 @@ model Utilisateur {
   specialite     Specialite?     @relation(fields: [specialiteId], references: [id])
   disponibilites Disponibilite[]
   rendezVous     RendezVous[]    @relation("MedecinRdv")
-  estActif       Boolean 
+  estActif       Boolean         @default(false)
 }
 
 model Specialite {
   id          Int           @id @default(autoincrement())
-  nom         String
+  nom         String        @unique
   utilisateur Utilisateur[]
+  rendezVous  RendezVous[]
+  symptomes   Symptome[]    @relation("SymptomeToSpecialite")
+}
+
+model Symptome {
+  id           Int           @id @default(autoincrement())
+  nom          String        @unique
+  specialites  Specialite[]  @relation("SymptomeToSpecialite")
 }
 
 model Disponibilite {
@@ -50,16 +58,17 @@ model Disponibilite {
 
 model RendezVous {
   id             Int          @id @default(autoincrement())
-  uuid           String       @unique
+  uuid           String       @unique @default(uuid())
   nom_patient    String
   email_patient  String
   numero_patient String
-  symptome       String
+  symptome       String       // Stockera le nom du symptôme choisi
   statut         String       @default("en_attente")
   presence       Boolean?     @default(false)
   date_rdv       DateTime?
   heure_rdv      DateTime?
   specialiteId   Int?
+  specialite     Specialite?  @relation(fields: [specialiteId], references: [id])
   medecinId      Int?
   medecin        Utilisateur? @relation("MedecinRdv", fields: [medecinId], references: [id])
   date_creation  DateTime     @default(now())
