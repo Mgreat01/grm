@@ -174,3 +174,19 @@ export const getAllMedecins = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 }
+
+export const getSymptomes = async (req, res) => {
+  try {
+    const symptomes = await prisma.symptome.findMany({
+      include: {
+        specialites: {
+          select: { nom: true },
+        },
+      },
+    });
+    res.json(symptomes);
+  } catch (error) {
+    console.error("Erreur getSymptomes:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
