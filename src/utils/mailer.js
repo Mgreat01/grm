@@ -7,30 +7,48 @@ const transporter = nodemailer.createTransport({
   ignoreTLS: true,
 });
 
-export const sendConfirmationEmail = async (patientEmail, rdvDetails) => {
+export const sendConfirmationEmail = async (email, rdv) => {
   try {
+    if (!email) return;
+
     await transporter.sendMail({
       from: '"SGM Santé" <no-reply@sgm.test>',
-      to: patientEmail,
-      subject: "Confirmation de votre Rendez-vous Médical",
+      to: email,
+      subject: "Confirmation Rendez-vous",
       html: `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-          <h2>Bonjour ${rdvDetails.nom_patient},</h2>
-          <p>Votre rendez-vous a été planifié avec succès.</p>
-          <hr>
-          <p><strong>Médecin :</strong> Dr. ${rdvDetails.medecin.noms_complet}</p>
-          <p><strong>Spécialité :</strong> ${rdvDetails.specialite.nom}</p>
-          <p><strong>Date :</strong> ${new Date(rdvDetails.date_rdv).toLocaleDateString()}</p>
-          <p><strong>Heure :</strong> ${new Date(rdvDetails.heure_rdv)
-            .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
-          <hr>
-          <small>L’équipe SGM Santé</small>
-        </div>
+      <div style="font-family:Arial">
+        <h2>Bonjour ${rdv.nom_patient}</h2>
+
+        <p>Votre rendez-vous est confirmé.</p>
+
+        <p><b>Médecin :</b> Dr. ${
+          rdv.medecin?.noms_complet || "Non attribué"
+        }</p>
+
+        <p><b>Spécialité :</b> ${
+          rdv.specialite?.nom || "Non définie"
+        }</p>
+
+        <p><b>Date :</b> ${new Date(
+          rdv.date_rdv
+        ).toLocaleDateString()}</p>
+
+        <p><b>Heure :</b> ${new Date(
+          rdv.heure_rdv
+        ).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}</p>
+
+        <hr>
+        <small>SGM Santé</small>
+      </div>
       `,
     });
 
-    console.log("📩 Email envoyé à :", patientEmail);
+    console.log("📩 Email envoyé :", email);
+
   } catch (error) {
-    console.error("❌ Erreur email :", error);
+    console.error("❌ Mail error:", error.message);
   }
 };

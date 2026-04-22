@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
+import { sendConfirmationEmail } from "../utils/mailer.js";
 
 const prisma = new PrismaClient();
 
@@ -28,7 +29,7 @@ export const createRendezVous = async (req, res) => {
 
     const uuid = crypto.randomUUID();
 
-    // 🔥 Correction ici
+    // Vérifier que la date et l'heure sont valides
     const fullHeure = heure_rdv ? new Date(`${date_rdv}T${heure_rdv}`) : null;
 
     const rdv = await prisma.rendezVous.create({
@@ -46,6 +47,7 @@ export const createRendezVous = async (req, res) => {
       },
     });
 
+    sendConfirmationEmail(rdv.email_patient, rdv);
     res.status(201).json({ message: "Rendez-vous créé", rdv });
 
   } catch (error) {
