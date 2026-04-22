@@ -1,5 +1,8 @@
 import axios from "axios";
 import { sendConfirmationEmail } from "../utils/mailer.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const AutoReservation = async (req, res) => {
   try {
@@ -14,7 +17,7 @@ export const AutoReservation = async (req, res) => {
     }
 
     const response = await axios.post(
-      "http://localhost:3001/api/ai/process",
+      process.env.autochedule_api_url,
       {
         nom_patient,
         email_patient,
@@ -40,25 +43,17 @@ export const AutoReservation = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Erreur AutoReservation :", error.message);
+  console.error("❌ Erreur AutoReservation");
 
-    if (error.response) {
-      return res.status(error.response.status).json({
-        success: false,
-        message: error.response.data.message || "Erreur microservice",
-      });
-    }
-
-    if (error.code === "ECONNREFUSED") {
-      return res.status(503).json({
-        success: false,
-        message: "Service IA indisponible",
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur interne serveur",
-    });
+  if (error.response) {
+    console.log("STATUS :", error.response.status);
+    console.log("DATA :", error.response.data);
+  } else {
+    console.log(error.message);
   }
+
+  return res.status(500).json({
+    error: "Erreur"
+  });
+}
 };

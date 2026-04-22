@@ -1,10 +1,15 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: "localhost",
-  port: 1025,
-  secure: false,
-  ignoreTLS: true,
+  host: process.env.smtp_host,
+  port: process.env.smtp_port,
+  auth: {
+    user: process.env.smtp_user,
+    pass: process.env.smtp_pass,
+  },
 });
 
 export const sendConfirmationEmail = async (email, rdv) => {
