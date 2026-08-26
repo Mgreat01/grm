@@ -18,6 +18,10 @@ export const createDisponibilite = async (req, res) => {
     }
 
     const idMed = parseInt(medecinId);
+    if (req.user.role === "medecin" && req.user.id !== idMed) {
+      return res.status(403).json({ error: "Vous ne pouvez gérer que vos disponibilités." });
+    }
+
     const medecin = await prisma.utilisateur.findUnique({ where: { id: idMed } });
 
     if (!medecin || medecin.type !== "medecin" || !medecin.estActif) {
@@ -58,6 +62,9 @@ export const deleteDisponibilite = async (req, res) => {
 
     const dispo = await prisma.disponibilite.findUnique({ where: { id: parseInt(id) } });
     if (!dispo) return res.status(404).json({ error: "Disponibilité introuvable" });
+    if (req.user.role === "medecin" && dispo.medecinId !== req.user.id) {
+      return res.status(403).json({ error: "Vous ne pouvez supprimer que vos disponibilités." });
+    }
 
     await prisma.disponibilite.delete({ where: { id: dispo.id } });
 
