@@ -8,6 +8,27 @@ Le projet constitue un prototype backend lisible et de taille maîtrisée, avec 
 
 Ordre recommandé : rétablir les parcours cassés et fermer les accès (**P0**), garantir l'intégrité fonctionnelle (**P1**), structurer et automatiser (**P2**), puis enrichir et optimiser (**P3**).
 
+### Suivi d'exécution
+
+| Élément | État | Commit |
+|---|---|---|
+| Référentiels initiaux | Terminé | `17108f3` |
+| P0-01 Authentification, rôles et propriété des agendas | Terminé (socle) | `af9dca5`, `ab530b9` |
+| P0-02 Relation symptômes/rendez-vous | Terminé | `96a2275` |
+| P0-03 DTO sans hash de mot de passe | Terminé | `1854797` |
+| P0-04 Inscription publique réservée aux patients | Terminé | `4a05ece` |
+| P0-05 Prévention des doubles réservations | Partiel : créneau exact, modèle temporel cible restant | `a025c22` |
+| P0-07 CORS configurable | Partiel : Helmet/rate limiting restant | `f9fd564` |
+| P0-08 Masquage des erreurs internes | Terminé (réponses existantes) | `9574564` |
+| P1-03 Validation des disponibilités | Partiel : règles temporelles actuelles | `9fadf74` |
+| P1-08 Pagination bornée des utilisateurs | Terminé | `03d5f17` |
+| P1-09 Seed autonome et mot de passe hashé | Terminé | `a3304a1` |
+| P1-10 Commande de seed | Terminé | `f811863` |
+| P2-04 Socle de tests | En cours : runner et premiers tests ajoutés | `d72de6f` |
+| P2-08 Chargement/validation de configuration | Terminé (socle) | `c6d80d1`, `f9fd564` |
+
+Les éléments marqués « partiel » ne doivent pas être considérés clos avant satisfaction du critère de sortie défini dans le backlog.
+
 ## 2. Backlog priorisé
 
 ### P0 — Sécurité et fonctionnement critique
