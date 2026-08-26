@@ -44,17 +44,16 @@ export const AutoReservation = async (req, res) => {
     });
 
   } catch (error) {
-  console.error("❌ Erreur AutoReservation");
+    console.error("Erreur AutoReservation:", error.message);
 
-  if (error.response) {
-    console.log("STATUS :", error.response.status);
-    console.log("DATA :", error.response.data);
-  } else {
-    console.log(error.message);
+    if (error.response) {
+      return res.status(error.response.status).json(error.response.data);
+    }
+
+    if (error.code === "ECONNABORTED") {
+      return res.status(504).json({ error: "Le service de planification a dépassé le délai autorisé." });
+    }
+
+    return res.status(503).json({ error: "Le service de planification est indisponible." });
   }
-
-  return res.status(500).json({
-    error: "Erreur"
-  });
-}
 };
