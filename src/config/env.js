@@ -19,3 +19,8 @@ export const validateEnv = (environment = process.env) => {
       .filter(Boolean),
   };
 };
+
+export const getSchedulerUrl = (environment = process.env) =>
+  environment.AUTO_SCHEDULE_API_URL ||
+  environment.autochedule_api_url ||
+  "http://localhost:3001/api/ai/process";

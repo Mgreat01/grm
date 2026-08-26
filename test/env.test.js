@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateEnv } from "../src/config/env.js";
+import { getSchedulerUrl, validateEnv } from "../src/config/env.js";
 
 test("validateEnv normalise le port et les origines CORS", () => {
   const config = validateEnv({
@@ -14,6 +14,20 @@ test("validateEnv normalise le port et les origines CORS", () => {
     port: 8080,
     corsOrigins: ["https://app.example", "https://admin.example"],
   });
+});
+
+test("getSchedulerUrl utilise le contrat local du scheduler par défaut", () => {
+  assert.equal(
+    getSchedulerUrl({}),
+    "http://localhost:3001/api/ai/process",
+  );
+});
+
+test("getSchedulerUrl reste compatible avec l'ancien nom de variable", () => {
+  assert.equal(
+    getSchedulerUrl({ autochedule_api_url: "http://scheduler:3001/api/ai/process" }),
+    "http://scheduler:3001/api/ai/process",
+  );
 });
 
 test("validateEnv refuse une variable obligatoire absente", () => {

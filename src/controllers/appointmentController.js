@@ -1,6 +1,7 @@
 import axios from "axios";
 import { sendConfirmationEmail } from "../utils/mailer.js";
 import dotenv from "dotenv";
+import { getSchedulerUrl } from "../config/env.js";
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ export const AutoReservation = async (req, res) => {
     }
 
     const response = await axios.post(
-      process.env.autochedule_api_url,
+      getSchedulerUrl(),
       {
         nom_patient,
         email_patient,
