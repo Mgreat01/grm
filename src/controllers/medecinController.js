@@ -17,6 +17,20 @@ export const createDisponibilite = async (req, res) => {
         return res.status(400).json({ error: "Le format de la date est invalide." });
     }
 
+    const formatHeure = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!formatHeure.test(heure_debut) || !formatHeure.test(heure_fin)) {
+      return res.status(400).json({ error: "Les heures doivent respecter le format HH:mm." });
+    }
+    if (heure_debut >= heure_fin) {
+      return res.status(400).json({ error: "L'heure de fin doit être postérieure à l'heure de début." });
+    }
+
+    const aujourdHui = new Date();
+    aujourdHui.setHours(0, 0, 0, 0);
+    if (dateObj < aujourdHui) {
+      return res.status(400).json({ error: "Une disponibilité ne peut pas être créée dans le passé." });
+    }
+
     const idMed = parseInt(medecinId);
     if (req.user.role === "medecin" && req.user.id !== idMed) {
       return res.status(403).json({ error: "Vous ne pouvez gérer que vos disponibilités." });
@@ -26,6 +40,19 @@ export const createDisponibilite = async (req, res) => {
 
     if (!medecin || medecin.type !== "medecin" || !medecin.estActif) {
       return res.status(400).json({ error: "Médecin invalide ou inactif" });
+    }
+
+    const chevauchement = await prisma.disponibilite.findFirst({
+      where: {
+        medecinId: idMed,
+        date: dateObj,
+        heure_debut: { lt: heure_fin },
+        heure_fin: { gt: heure_debut },
+      },
+      select: { id: true },
+    });
+    if (chevauchement) {
+      return res.status(409).json({ error: "Cette disponibilité chevauche une plage existante." });
     }
 
     const disponibilite = await prisma.disponibilite.create({
