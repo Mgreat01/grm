@@ -271,8 +271,11 @@ const router = express.Router();
  *               - nom_patient
  *               - email_patient
  *               - numero_patient
- *               - symptome
+ *               - symptomeIds
  *               - specialiteId
+ *               - medecinId
+ *               - date_rdv
+ *               - heure_rdv
  *             properties:
  *               nom_patient:
  *                 type: string
@@ -283,12 +286,26 @@ const router = express.Router();
  *               numero_patient:
  *                 type: string
  *                 example: "+243810000000"
- *               symptome:
- *                 type: string
- *                 example: "Fièvre persistante"
+ *               symptomeIds:
+ *                 type: array
+ *                 minItems: 1
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 4]
  *               specialiteId:
  *                 type: integer
  *                 example: 1
+ *               medecinId:
+ *                 type: integer
+ *                 example: 2
+ *               date_rdv:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-09-10"
+ *               heure_rdv:
+ *                 type: string
+ *                 pattern: "^([01]\\d|2[0-3]):[0-5]\\d$"
+ *                 example: "09:30"
  *     responses:
  *       201:
  *         description: Rendez-vous créé
@@ -299,6 +316,69 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Liste récupérée
+ */
+
+/**
+ * @swagger
+ * /admin/users:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Lister les utilisateurs avec pagination
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+ *     responses:
+ *       200: { description: Liste paginée des utilisateurs }
+ *       401: { description: Authentification requise }
+ *       403: { description: Rôle administrateur requis }
+ *
+ * /receptionnistes/medecins:
+ *   get:
+ *     tags: [Réceptionniste]
+ *     summary: Lister les médecins actifs
+ *     responses:
+ *       200: { description: Liste des médecins actifs }
+ *       401: { description: Authentification requise }
+ *       403: { description: Accès interdit }
+ *
+ * /receptionnistes/symptomes:
+ *   get:
+ *     tags: [Réceptionniste]
+ *     summary: Lister le référentiel des symptômes
+ *     responses:
+ *       200: { description: Liste alphabétique des symptômes }
+ *       401: { description: Authentification requise }
+ *       403: { description: Accès interdit }
+ *
+ * /auto-schedule:
+ *   post:
+ *     tags: [Patient]
+ *     summary: Demander une réservation automatique
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nom_patient, numero_patient, symptomeIds]
+ *             properties:
+ *               nom_patient: { type: string, example: "Marie Tshianda" }
+ *               email_patient: { type: string, format: email, example: "marie@example.com" }
+ *               numero_patient: { type: string, example: "+243810000000" }
+ *               symptomeIds:
+ *                 type: array
+ *                 minItems: 1
+ *                 items: { type: integer }
+ *                 example: [1, 4]
+ *     responses:
+ *       201: { description: Rendez-vous planifié }
+ *       400: { description: Données requises manquantes }
+ *       500: { description: Service de planification indisponible }
  */
 
 /**
