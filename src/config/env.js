@@ -13,7 +13,7 @@ export const validateEnv = (environment = process.env) => {
 
   return {
     port,
-    corsOrigins: (environment.CORS_ORIGINS || "http://localhost:3000")
+    corsOrigins: (environment.CORS_ORIGINS || "http://localhost:4200,http://localhost:3000")
       .split(",")
       .map((origin) => origin.trim())
       .filter(Boolean),
