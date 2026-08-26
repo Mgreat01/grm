@@ -10,8 +10,18 @@ const options = {
       version: "1.0.0",
       description: "Documentation API pour la gestion des rendez-vous médicaux",
     },
-    //  On met /api pour que Swagger UI envoie correctement les requêtes
-    servers: [{ url: "http://localhost:5000/api", description: "Serveur local" }],
+    servers: [{ url: "/api", description: "Serveur courant" }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Saisissez uniquement le JWT retourné par /utilisateurs/login.",
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
   },
 
   // Chemins où swagger va chercher les annotations

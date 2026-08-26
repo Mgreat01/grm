@@ -325,6 +325,7 @@ const router = express.Router();
  *   post:
  *     tags: [Utilisateur]
  *     summary: Inscription utilisateur
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -356,6 +357,7 @@ const router = express.Router();
  *   post:
  *     tags: [Utilisateur]
  *     summary: Connexion utilisateur
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
