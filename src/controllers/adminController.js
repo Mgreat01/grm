@@ -171,8 +171,16 @@ export const createAdminUser = async (req, res) => {
 export const getAllUtilisateurs = async (req, res) => {
   try {
     // Récupérer page et limite depuis la query string (ex: ?page=2&limit=10)
-    const page = parseInt(req.query.page) || 1;   // page courante (par défaut 1)
-    const limit = parseInt(req.query.limit) || 10; // nombre d'éléments par page (par défaut 10)
+    const pageDemandee = Number.parseInt(req.query.page || "1", 10);
+    const limiteDemandee = Number.parseInt(req.query.limit || "10", 10);
+
+    if (!Number.isInteger(pageDemandee) || pageDemandee < 1 ||
+        !Number.isInteger(limiteDemandee) || limiteDemandee < 1) {
+      return res.status(400).json({ error: "page et limit doivent être des entiers positifs." });
+    }
+
+    const page = pageDemandee;
+    const limit = Math.min(limiteDemandee, 100);
 
     // Calculer combien sauter
     const skip = (page - 1) * limit;
