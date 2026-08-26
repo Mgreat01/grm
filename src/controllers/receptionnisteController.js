@@ -201,7 +201,10 @@ export const getAllMedecins = async (req, res) => {
   try {
     const medecins = await prisma.utilisateur.findMany({
       where: { type: "medecin", estActif: true },
-      include: {
+      select: {
+        id: true,
+        noms_complet: true,
+        email: true,
         specialite: {
           select: { nom: true },
         },

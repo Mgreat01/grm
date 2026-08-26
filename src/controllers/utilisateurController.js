@@ -143,6 +143,14 @@ export const updateProfilUtilisateur = async (req, res) => {
     const utilisateur = await prisma.utilisateur.update({
       where: { id: req.user.id },
       data,
+      select: {
+        id: true,
+        noms_complet: true,
+        email: true,
+        type: true,
+        specialiteId: true,
+        estActif: true,
+      },
     });
 
     res.json({ message: "Profil mis à jour", utilisateur });

@@ -2,6 +2,14 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 import bcrypt from 'bcrypt';
 
+const utilisateurPublicSelect = {
+  id: true,
+  noms_complet: true,
+  email: true,
+  type: true,
+  specialiteId: true,
+  estActif: true,
+};
 
 export const createUtilisateurByAdmin = async (req, res) => {
   try {
@@ -38,6 +46,7 @@ export const createUtilisateurByAdmin = async (req, res) => {
         estActif: true,
         ...(specialiteData ? { specialite: specialiteData } : {}),
       },
+      select: utilisateurPublicSelect,
     });
 
     res.status(201).json({ message: "Utilisateur créé avec succès", utilisateur });
@@ -65,6 +74,7 @@ export const activerUtilisateur = async (req, res) => {
     const utilisateur = await prisma.utilisateur.update({
       where: { id: parseInt(id) },
       data: { estActif: !utilisateurActuel.estActif },
+      select: utilisateurPublicSelect,
     });
 
     res.json({
@@ -142,6 +152,7 @@ export const createAdminUser = async (req, res) => {
         type: "admin",
         estActif: true,
       },
+      select: utilisateurPublicSelect,
     })
     res.status(201).json({ message: "Utilisateur admin créé avec succès", utilisateur });
   
@@ -166,6 +177,7 @@ export const getAllUtilisateurs = async (req, res) => {
       skip,
       take: limit,
       orderBy: { id: "asc" }, // optionnel : trier par id
+      select: utilisateurPublicSelect,
     });
 
     // Compter le total pour calculer le nombre de pages
