@@ -8,18 +8,18 @@ const prisma = new PrismaClient();
 //  Inscription d’un utilisateur (auto)
 export const inscriptionUtilisateur = async (req, res) => {
   try {
-    const { noms_complet, email, motdepasse, type, specialiteId } = req.body;
+    const { noms_complet, email, motdepasse } = req.body;
+
+    if (!noms_complet || !email || !motdepasse) {
+      return res.status(400).json({
+        message: "Les champs noms_complet, email et motdepasse sont requis.",
+      });
+    }
 
     // Vérifier si l'email est déjà utilisé
     const utilisateurExistant = await prisma.utilisateur.findUnique({ where: { email } });
     if (utilisateurExistant) {
       return res.status(400).json({ message: "Email déjà utilisé." });
-    }
-
-    // Vérifier le type d'utilisateur
-    const typesAutorises = ["medecin", "patient", "receptionniste"];
-    if (!typesAutorises.includes(type)) {
-      return res.status(400).json({ message: "Type d'utilisateur invalide." });
     }
 
     // Hash du mot de passe
@@ -31,8 +31,8 @@ export const inscriptionUtilisateur = async (req, res) => {
         noms_complet,
         email,
         motdepasse: hash,
-        type,
-        specialiteId: type === "medecin" ? specialiteId || null : null,
+        type: "patient",
+        specialiteId: null,
         estActif: false, // activation par l'admin
       },
     });
