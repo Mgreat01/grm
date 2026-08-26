@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { sendConfirmationEmail } from "../utils/mailer.js";
 
 const prisma = new PrismaClient();
