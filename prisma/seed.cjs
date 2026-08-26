@@ -1,28 +1,40 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
 dotenv.config({ path: './.env' });
 
 async function main() {
   console.log("🚀 Liaison des symptômes aux spécialités existantes...");
 
-  // Définition des symptômes et de leurs liens avec tes IDs
+  const nomsSpecialites = ["Pédiatrie", "Gynécologie", "Cardiologie", "ORL"];
+  const specialites = {};
+
+  for (const nom of nomsSpecialites) {
+    specialites[nom] = await prisma.specialite.upsert({
+      where: { nom },
+      update: {},
+      create: { nom },
+    });
+  }
+
+  // Définition des symptômes et de leurs liens par clés métier stables
   const symptomesData = [
     {
       nom: "Maux de tête",
-      specialiteIds: [1, 4] // Pédiatrie (1), ORL (4)
+      specialiteNoms: ["Pédiatrie", "ORL"]
     },
     {
       nom: "Fatigue",
-      specialiteIds: [2] // Gynécologie (2)
+      specialiteNoms: ["Gynécologie"]
     },
     {
       nom: "Migraine",
-      specialiteIds: [3] // Cardiologie (3)
+      specialiteNoms: ["Cardiologie"]
     },
     {
         nom: "Fièvre",
-        specialiteIds: [1, 4] // Pédiatrie (1), ORL (4)
+        specialiteNoms: ["Pédiatrie", "ORL"]
     }
   ];
 
@@ -31,13 +43,13 @@ async function main() {
       where: { nom: item.nom },
       update: {
         specialites: {
-          connect: item.specialiteIds.map(id => ({ id: id }))
+          set: item.specialiteNoms.map(nom => ({ id: specialites[nom].id }))
         }
       },
       create: {
         nom: item.nom,
         specialites: {
-          connect: item.specialiteIds.map(id => ({ id: id }))
+          connect: item.specialiteNoms.map(nom => ({ id: specialites[nom].id }))
         }
       },
     });
@@ -45,15 +57,16 @@ async function main() {
 
   // --- OPTIONNEL : Création d'un médecin de test pour pouvoir tester l'IA ---
   // On crée un médecin pour la spécialité 1 (Pédiatrie) qui est actif
-  const medecinTest = await prisma.utilisateur.upsert({
+  const motdepasseTestHash = await bcrypt.hash('123456', 10);
+  await prisma.utilisateur.upsert({
     where: { email: 'test.medecin@exemple.com' },
     update: {},
     create: {
       noms_complet: "Dr. Jean Test",
       email: "test.medecin@exemple.com",
-      motdepasse: "123456", // À hasher normalement
+      motdepasse: motdepasseTestHash,
       type: "medecin",
-      specialiteId: 1, // Pédiatrie
+      specialiteId: specialites["Pédiatrie"].id,
       estActif: true,
       disponibilites: {
         create: [
@@ -72,7 +85,7 @@ async function main() {
     }
   });
 
-  console.log("✅ Seed terminé ! Les symptômes sont liés à vos spécialités 1, 2, 3 et 4.");
+  console.log("✅ Seed terminé ! Les spécialités et symptômes sont correctement liés.");
 }
 
 main()
