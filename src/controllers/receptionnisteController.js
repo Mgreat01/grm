@@ -11,12 +11,23 @@ export const createRendezVous = async (req, res) => {
       nom_patient,
       email_patient,
       numero_patient,
-      symptome,
+      symptomeIds,
       date_rdv,
       heure_rdv,
       specialiteId,
       medecinId,
     } = req.body;
+
+    if (!nom_patient || !email_patient || !numero_patient || !Array.isArray(symptomeIds) || symptomeIds.length === 0) {
+      return res.status(400).json({
+        error: "nom_patient, email_patient, numero_patient et symptomeIds sont requis",
+      });
+    }
+
+    const parsedSymptomeIds = [...new Set(symptomeIds.map((id) => Number.parseInt(id, 10)))];
+    if (parsedSymptomeIds.some(Number.isNaN)) {
+      return res.status(400).json({ error: "symptomeIds doit contenir uniquement des identifiants valides" });
+    }
 
     // Vérifier que le médecin existe
     const medecin = await prisma.utilisateur.findUnique({
@@ -25,6 +36,13 @@ export const createRendezVous = async (req, res) => {
 
     if (!medecin || medecin.type !== "medecin") {
       return res.status(400).json({ error: "Médecin invalide" });
+    }
+
+    const nombreSymptomes = await prisma.symptome.count({
+      where: { id: { in: parsedSymptomeIds } },
+    });
+    if (nombreSymptomes !== parsedSymptomeIds.length) {
+      return res.status(400).json({ error: "Un ou plusieurs symptômes sont inconnus" });
     }
 
     const uuid = crypto.randomUUID();
@@ -38,12 +56,19 @@ export const createRendezVous = async (req, res) => {
         nom_patient,
         email_patient,
         numero_patient,
-        symptome,
+        symptomes: {
+          connect: parsedSymptomeIds.map((id) => ({ id })),
+        },
         date_rdv: date_rdv ? new Date(date_rdv) : null,
         heure_rdv: fullHeure,
         specialiteId: specialiteId ? parseInt(specialiteId) : null,
         medecinId: parseInt(medecinId),
         statut: "en_attente",
+      },
+      include: {
+        symptomes: { select: { id: true, nom: true } },
+        medecin: { select: { noms_complet: true } },
+        specialite: { select: { nom: true } },
       },
     });
 
@@ -66,7 +91,7 @@ export const updateRendezVous = async (req, res) => {
       heure_rdv,
       statut,
       presence,
-      symptome,
+      symptomeIds,
       specialiteId,
       medecinId,
     } = req.body;
@@ -78,7 +103,13 @@ export const updateRendezVous = async (req, res) => {
         heure_rdv: heure_rdv ? new Date(heure_rdv) : undefined,
         statut,
         presence,
-        symptome,
+        ...(Array.isArray(symptomeIds) ? {
+          symptomes: {
+            set: symptomeIds.map((symptomeId) => ({
+              id: Number.parseInt(symptomeId, 10),
+            })),
+          },
+        } : {}),
         specialiteId: specialiteId ? parseInt(specialiteId) : undefined,
         medecinId: medecinId ? parseInt(medecinId) : undefined,
       },
@@ -113,6 +144,9 @@ export const getAllRendezVous = async (req, res) => {
   try {
     const rdvs = await prisma.rendezVous.findMany({
       include: {
+        symptomes: {
+          select: { id: true, nom: true },
+        },
         medecin: {
           select: {
             noms_complet: true,
@@ -141,6 +175,9 @@ export const getRendezVousMedecin = async (req, res) => {
     const rdvs = await prisma.rendezVous.findMany({
       where: { medecinId: parseInt(medecinId) },
       include: {
+        symptomes: {
+          select: { id: true, nom: true },
+        },
         medecin: {
           select: {
             noms_complet: true,
