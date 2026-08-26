@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv"; 
 import apiRoute from "./src/routes/apiRoute.js";
+import { validateEnv } from "./src/config/env.js";
 
 //  Import Swagger (le chemin doit être correct)
 import { swaggerSpec } from "./swagger.js";
@@ -9,13 +10,14 @@ import swaggerUi from "swagger-ui-express";
 
 // Charger les variables d'environnement (.env)
 dotenv.config();
+const config = validateEnv();
 
 //  Création de l'application EN PREMIER
 const app = express();
 
 // === Middlewares globaux ===
 app.use(express.json()); 
-app.use(cors());
+app.use(cors({ origin: config.corsOrigins }));
 
 // === Documentation Swagger (doit être placée APRÈS la création de app)
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -30,7 +32,7 @@ app.use((err, req, res, next) => {
 });
 
 // === Port dynamique ===
-const PORT = process.env.PORT || 5000;
+const PORT = config.port;
 
 app.listen(PORT, () => {
   console.log(` Serveur lancé sur le port ${PORT}`);
