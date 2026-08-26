@@ -23,11 +23,16 @@ test("Swagger couvre toutes les routes Express", () => {
     "/receptionnistes/medecins",
     "/receptionnistes/symptomes",
     "/auto-schedule",
+    "/symptomes",
   ];
 
   for (const route of routesAttendues) {
     assert.ok(swaggerSpec.paths[route], `Route Swagger manquante : ${route}`);
   }
+});
+
+test("le référentiel public des symptômes ne requiert pas de JWT", () => {
+  assert.deepEqual(swaggerSpec.paths["/symptomes"].get.security, []);
 });
 
 test("le rendez-vous utilise le contrat symptomeIds", () => {

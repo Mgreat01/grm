@@ -379,6 +379,14 @@ const router = express.Router();
  *       201: { description: Rendez-vous planifié }
  *       400: { description: Données requises manquantes }
  *       500: { description: Service de planification indisponible }
+ *
+ * /symptomes:
+ *   get:
+ *     tags: [Patient]
+ *     summary: Lister les symptômes disponibles
+ *     security: []
+ *     responses:
+ *       200: { description: Liste alphabétique des symptômes }
  */
 
 /**
@@ -524,6 +532,7 @@ router.get("/receptionnistes/symptomes", authenticate, requireRole("receptionnis
 // ===========================================================
 
  router.post('/auto-schedule', AutoReservation);
+ router.get('/symptomes', getSymptomes);
 
 // ===========================================================
 //  UTILISATEUR (GÉNÉRAL)
