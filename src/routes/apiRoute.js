@@ -365,7 +365,7 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [nom_patient, numero_patient, symptomeIds]
+ *             required: [nom_patient, email_patient, numero_patient, symptomeIds]
  *             properties:
  *               nom_patient: { type: string, example: "Marie Tshianda" }
  *               email_patient: { type: string, format: email, example: "marie@example.com" }

@@ -10,7 +10,7 @@ export const AutoReservation = async (req, res) => {
     const { nom_patient, email_patient, numero_patient, symptomeIds } = req.body;
 
     // Validation simple
-    if (!nom_patient || !numero_patient || !symptomeIds?.length) {
+    if (!nom_patient || !email_patient || !numero_patient || !symptomeIds?.length) {
       return res.status(400).json({
         success: false,
         message: "Champs requis manquants",

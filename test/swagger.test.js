@@ -43,3 +43,11 @@ test("le rendez-vous utilise le contrat symptomeIds", () => {
   assert.equal(schema.properties.symptome, undefined);
   assert.ok(schema.required.includes("symptomeIds"));
 });
+
+test("la réservation automatique exige les coordonnées persistées par Prisma", () => {
+  const schema = swaggerSpec.paths["/auto-schedule"]
+    .post.requestBody.content["application/json"].schema;
+
+  assert.ok(schema.required.includes("email_patient"));
+  assert.ok(schema.required.includes("numero_patient"));
+});
