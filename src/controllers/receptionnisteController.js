@@ -49,34 +49,59 @@ export const createRendezVous = async (req, res) => {
 
     // Vérifier que la date et l'heure sont valides
     const fullHeure = heure_rdv ? new Date(`${date_rdv}T${heure_rdv}`) : null;
+    const dateRendezVous = date_rdv ? new Date(date_rdv) : null;
+    if (!dateRendezVous || !fullHeure || Number.isNaN(dateRendezVous.getTime()) || Number.isNaN(fullHeure.getTime())) {
+      return res.status(400).json({ error: "La date et l'heure du rendez-vous sont invalides" });
+    }
 
-    const rdv = await prisma.rendezVous.create({
-      data: {
-        uuid,
-        nom_patient,
-        email_patient,
-        numero_patient,
-        symptomes: {
-          connect: parsedSymptomeIds.map((id) => ({ id })),
+    const rdv = await prisma.$transaction(async (transaction) => {
+      const conflit = await transaction.rendezVous.findFirst({
+        where: {
+          medecinId: Number.parseInt(medecinId, 10),
+          date_rdv: dateRendezVous,
+          heure_rdv: fullHeure,
+          statut: { not: "annule" },
         },
-        date_rdv: date_rdv ? new Date(date_rdv) : null,
-        heure_rdv: fullHeure,
-        specialiteId: specialiteId ? parseInt(specialiteId) : null,
-        medecinId: parseInt(medecinId),
-        statut: "en_attente",
-      },
-      include: {
-        symptomes: { select: { id: true, nom: true } },
-        medecin: { select: { noms_complet: true } },
-        specialite: { select: { nom: true } },
-      },
-    });
+        select: { id: true },
+      });
+
+      if (conflit) {
+        const error = new Error("Ce créneau est déjà réservé");
+        error.code = "APPOINTMENT_CONFLICT";
+        throw error;
+      }
+
+      return transaction.rendezVous.create({
+        data: {
+          uuid,
+          nom_patient,
+          email_patient,
+          numero_patient,
+          symptomes: {
+            connect: parsedSymptomeIds.map((id) => ({ id })),
+          },
+          date_rdv: dateRendezVous,
+          heure_rdv: fullHeure,
+          specialiteId: specialiteId ? parseInt(specialiteId) : null,
+          medecinId: parseInt(medecinId),
+          statut: "en_attente",
+        },
+        include: {
+          symptomes: { select: { id: true, nom: true } },
+          medecin: { select: { noms_complet: true } },
+          specialite: { select: { nom: true } },
+        },
+      });
+    }, { isolationLevel: "Serializable" });
 
     sendConfirmationEmail(rdv.email_patient, rdv);
     res.status(201).json({ message: "Rendez-vous créé", rdv });
 
   } catch (error) {
     console.error("Erreur createRendezVous:", error);
+    if (error.code === "APPOINTMENT_CONFLICT" || error.code === "P2034") {
+      return res.status(409).json({ error: "Ce créneau est déjà réservé" });
+    }
     res.status(500).json({ error: error.message });
   }
 };
