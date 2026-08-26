@@ -52,7 +52,7 @@ export const createUtilisateurByAdmin = async (req, res) => {
     res.status(201).json({ message: "Utilisateur créé avec succès", utilisateur });
   } catch (error) {
     console.error("Erreur lors de la création de l'utilisateur:", error);
-    res.status(500).json({ error: error.message || "Une erreur interne est survenue." });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -84,7 +84,8 @@ export const activerUtilisateur = async (req, res) => {
       utilisateur,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur activerUtilisateur:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -97,7 +98,8 @@ export const createSpecialite = async (req, res) => {
     });
     res.status(201).json({ message: "Spécialité créée avec succès", specialite });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur createSpecialite:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -106,7 +108,8 @@ export const getSpecialites = async (req, res) => {
     const specialites = await prisma.specialite.findMany();
     res.json(specialites);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur getSpecialites:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -120,7 +123,8 @@ export const updateSpecialite = async (req, res) => {
     });
     res.json({ message: "Spécialité mise à jour", specialite });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur updateSpecialite:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -130,7 +134,8 @@ export const deleteSpecialite = async (req, res) => {
     await prisma.specialite.delete({ where: { id: parseInt(id) } });
     res.json({ message: "Spécialité supprimée" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur deleteSpecialite:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -159,7 +164,7 @@ export const createAdminUser = async (req, res) => {
   }
   catch (error) {
     console.error("Erreur lors de la création de l'utilisateur admin:", error);
-    res.status(500).json({ error: error.message || "Une erreur interne est survenue." });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 }
 
@@ -191,6 +196,7 @@ export const getAllUtilisateurs = async (req, res) => {
       utilisateurs,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur getAllUtilisateurs:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };

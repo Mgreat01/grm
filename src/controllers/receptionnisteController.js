@@ -102,7 +102,7 @@ export const createRendezVous = async (req, res) => {
     if (error.code === "APPOINTMENT_CONFLICT" || error.code === "P2034") {
       return res.status(409).json({ error: "Ce créneau est déjà réservé" });
     }
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -143,7 +143,7 @@ export const updateRendezVous = async (req, res) => {
     res.json({ message: "Rendez-vous mis à jour", rdv });
   } catch (error) {
     console.error("Erreur updateRendezVous:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -160,7 +160,7 @@ export const deleteRendezVous = async (req, res) => {
     res.json({ message: "Rendez-vous annulé" });
   } catch (error) {
     console.error("Erreur deleteRendezVous:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -188,7 +188,7 @@ export const getAllRendezVous = async (req, res) => {
     res.json(rdvs);
   } catch (error) {
     console.error("Erreur getAllRendezVous:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -219,7 +219,7 @@ export const getRendezVousMedecin = async (req, res) => {
     res.json(rdvs);
   } catch (error) {
     console.error("Erreur getRendezVousMedecin:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 export const getAllMedecins = async (req, res) => {
@@ -238,7 +238,7 @@ export const getAllMedecins = async (req, res) => {
     res.json(medecins);
   } catch (error) {
     console.error("Erreur getAllMedecins:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 }
 

@@ -39,7 +39,8 @@ export const createDisponibilite = async (req, res) => {
 
     res.status(201).json({ message: "Disponibilité ajoutée", disponibilite });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur createDisponibilite:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -52,7 +53,8 @@ export const getDisponibilitesByMedecin = async (req, res) => {
     });
     res.json(disponibilites);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur getDisponibilitesByMedecin:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -70,7 +72,8 @@ export const deleteDisponibilite = async (req, res) => {
 
     res.json({ message: "Disponibilité supprimée" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur deleteDisponibilite:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
 
@@ -97,6 +100,7 @@ export const getRendezVousMedecin = async (req, res) => {
 
     res.json(rdvs);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erreur getRendezVousMedecin:", error);
+    res.status(500).json({ error: "Une erreur interne est survenue." });
   }
 };
