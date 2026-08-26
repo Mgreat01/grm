@@ -38,6 +38,11 @@ import {
 import {
 AutoReservation
 } from "../controllers/appointmentController.js"
+import {
+  authenticate,
+  requireRole,
+  requireSelfOrRole,
+} from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -397,40 +402,40 @@ const router = express.Router();
 // ===========================================================
 //  ADMIN ROUTES
 // router.post("/admin/userss", createAdminUser);
-router.get("/admin/users", getAllUtilisateurs);
+router.get("/admin/users", authenticate, requireRole("admin"), getAllUtilisateurs);
 // ===========================================================
 
 // --- Gestion des utilisateurs ---
-router.post("/admin/utilisateurs", createUtilisateurByAdmin);
-router.patch("/admin/utilisateurs/:id/activer", activerUtilisateur);
+router.post("/admin/utilisateurs", authenticate, requireRole("admin"), createUtilisateurByAdmin);
+router.patch("/admin/utilisateurs/:id/activer", authenticate, requireRole("admin"), activerUtilisateur);
 
 // --- Gestion des spécialités ---
-router.post("/admin/specialites", createSpecialite);
-router.get("/admin/specialites", getSpecialites);
-router.put("/admin/specialites/:id", updateSpecialite);
-router.delete("/admin/specialites/:id", deleteSpecialite);
+router.post("/admin/specialites", authenticate, requireRole("admin"), createSpecialite);
+router.get("/admin/specialites", authenticate, requireRole("admin"), getSpecialites);
+router.put("/admin/specialites/:id", authenticate, requireRole("admin"), updateSpecialite);
+router.delete("/admin/specialites/:id", authenticate, requireRole("admin"), deleteSpecialite);
 
 // ===========================================================
 //  MEDECIN ROUTES
 // ===========================================================
 
 // --- Gestion des disponibilités ---
-router.post("/medecins/disponibilites", createDisponibilite);
-router.get("/medecins/:medecinId/disponibilites", getDisponibilitesByMedecin);
-router.delete("/medecins/disponibilites/:id", deleteDisponibilite);
+router.post("/medecins/disponibilites", authenticate, requireRole("medecin", "admin"), createDisponibilite);
+router.get("/medecins/:medecinId/disponibilites", authenticate, requireRole("medecin", "admin", "receptionniste"), requireSelfOrRole("medecinId", "admin", "receptionniste"), getDisponibilitesByMedecin);
+router.delete("/medecins/disponibilites/:id", authenticate, requireRole("medecin", "admin"), deleteDisponibilite);
 
 // --- Rendez-vous du médecin ---
-router.get("/medecins/:medecinId/rendezvous", getRendezVousMedecin);
+router.get("/medecins/:medecinId/rendezvous", authenticate, requireRole("medecin", "admin", "receptionniste"), requireSelfOrRole("medecinId", "admin", "receptionniste"), getRendezVousMedecin);
 
 // ===========================================================
 //  RECEPTIONNISTE ROUTES
 // ===========================================================
-router.post("/receptionnistes/rendezvous", createRendezVous);
-router.put("/receptionnistes/rendezvous/:id", updateRendezVous);
-router.delete("/receptionnistes/rendezvous/:id", deleteRendezVous);
-router.get("/receptionnistes/rendezvous", getAllRendezVous);
-router.get("/receptionnistes/medecins", getAllMedecins);
-router.get("/receptionnistes/symptomes", getSymptomes);
+router.post("/receptionnistes/rendezvous", authenticate, requireRole("receptionniste", "admin"), createRendezVous);
+router.put("/receptionnistes/rendezvous/:id", authenticate, requireRole("receptionniste", "admin"), updateRendezVous);
+router.delete("/receptionnistes/rendezvous/:id", authenticate, requireRole("receptionniste", "admin"), deleteRendezVous);
+router.get("/receptionnistes/rendezvous", authenticate, requireRole("receptionniste", "admin"), getAllRendezVous);
+router.get("/receptionnistes/medecins", authenticate, requireRole("receptionniste", "admin"), getAllMedecins);
+router.get("/receptionnistes/symptomes", authenticate, requireRole("receptionniste", "admin"), getSymptomes);
 
 // ===========================================================
 // patient ROUTES
@@ -447,8 +452,8 @@ router.post("/utilisateurs/register", inscriptionUtilisateur);
 router.post("/utilisateurs/login", connexionUtilisateur);
 
 // --- Profil utilisateur (protégé par middleware JWT) ---
-router.get("/utilisateurs/profil", getProfilUtilisateur);
-router.put("/utilisateurs/profil", updateProfilUtilisateur);
+router.get("/utilisateurs/profil", authenticate, getProfilUtilisateur);
+router.put("/utilisateurs/profil", authenticate, updateProfilUtilisateur);
 
 // ===========================================================
 // EXPORT GLOBAL DES ROUTES
