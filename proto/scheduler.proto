@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package grm.scheduler.v1;
+
+service SchedulerService {
+  rpc ScheduleAppointment (ScheduleAppointmentRequest) returns (ScheduleAppointmentResponse);
+  rpc CheckHealth (HealthRequest) returns (HealthResponse);
+}
+
+message ScheduleAppointmentRequest {
+  string nom_patient = 1;
+  string email_patient = 2;
+  string numero_patient = 3;
+  repeated int32 symptome_ids = 4;
+}
+
+message ScheduleAppointmentResponse {
+  Appointment appointment = 1;
+}
+
+message Appointment {
+  int32 id = 1;
+  string uuid = 2;
+  string nom_patient = 3;
+  string email_patient = 4;
+  string numero_patient = 5;
+  string statut = 6;
+  string date_rdv = 7;
+  string heure_rdv = 8;
+  int32 specialite_id = 9;
+  int32 medecin_id = 10;
+  Practitioner medecin = 11;
+  Specialty specialite = 12;
+}
+
+message Practitioner {
+  int32 id = 1;
+  string noms_complet = 2;
+}
+
+message Specialty {
+  int32 id = 1;
+  string nom = 2;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+}
