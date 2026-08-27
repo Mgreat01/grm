@@ -20,7 +20,10 @@ export const validateEnv = (environment = process.env) => {
   };
 };
 
-export const getSchedulerUrl = (environment = process.env) =>
-  environment.AUTO_SCHEDULE_API_URL ||
-  environment.autochedule_api_url ||
-  "http://localhost:3001/api/ai/process";
+export const getSchedulerAddress = (environment = process.env) =>
+  environment.SCHEDULER_GRPC_ADDRESS || "localhost:50051";
+
+export const getSchedulerTimeoutMs = (environment = process.env) => {
+  const timeout = Number.parseInt(environment.SCHEDULER_GRPC_TIMEOUT_MS || "10000", 10);
+  return Number.isInteger(timeout) && timeout > 0 ? timeout : 10000;
+};

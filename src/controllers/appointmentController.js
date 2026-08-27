@@ -1,59 +1,46 @@
-import axios from "axios";
 import { sendConfirmationEmail } from "../utils/mailer.js";
-import dotenv from "dotenv";
-import { getSchedulerUrl } from "../config/env.js";
+import { grpc, scheduleAppointment } from "../services/schedulerClient.js";
 
-dotenv.config();
+const httpStatusByGrpcStatus = {
+  [grpc.status.INVALID_ARGUMENT]: 400,
+  [grpc.status.NOT_FOUND]: 404,
+  [grpc.status.FAILED_PRECONDITION]: 400,
+  [grpc.status.ABORTED]: 409,
+  [grpc.status.DEADLINE_EXCEEDED]: 504,
+  [grpc.status.UNAVAILABLE]: 503,
+};
 
 export const AutoReservation = async (req, res) => {
+  const { nom_patient, email_patient, numero_patient, symptomeIds } = req.body;
+
+  if (!nom_patient || !email_patient || !numero_patient || !symptomeIds?.length) {
+    return res.status(400).json({
+      success: false,
+      message: "Champs requis manquants",
+    });
+  }
+
   try {
-    const { nom_patient, email_patient, numero_patient, symptomeIds } = req.body;
+    const appointment = await scheduleAppointment({
+      nom_patient,
+      email_patient,
+      numero_patient,
+      symptomeIds,
+    });
 
-    // Validation simple
-    if (!nom_patient || !email_patient || !numero_patient || !symptomeIds?.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Champs requis manquants",
-      });
-    }
-
-    const response = await axios.post(
-      getSchedulerUrl(),
-      {
-        nom_patient,
-        email_patient,
-        numero_patient,
-        symptomeIds,
-      },
-      {
-        timeout: 10000,
-      }
-    );
-
-    const rdv = response.data.data;
-
-    // envoyer email sans bloquer réponse API
-    if (email_patient) {
-      sendConfirmationEmail(email_patient, rdv);
-    }
+    void sendConfirmationEmail(email_patient, appointment);
 
     return res.status(201).json({
       success: true,
       message: "Rendez-vous planifié avec succès",
-      data: rdv,
+      data: appointment,
     });
-
   } catch (error) {
-    console.error("Erreur AutoReservation:", error.message);
-
-    if (error.response) {
-      return res.status(error.response.status).json(error.response.data);
-    }
-
-    if (error.code === "ECONNABORTED") {
-      return res.status(504).json({ error: "Le service de planification a dépassé le délai autorisé." });
-    }
-
-    return res.status(503).json({ error: "Le service de planification est indisponible." });
+    console.error("Erreur AutoReservation gRPC:", error.message);
+    const status = httpStatusByGrpcStatus[error.code] || 503;
+    return res.status(status).json({
+      success: false,
+      error: error.details || "Le service de planification est indisponible.",
+    });
   }
 };
