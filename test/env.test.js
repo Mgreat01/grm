@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getSchedulerUrl, validateEnv } from "../src/config/env.js";
+import {
+  getSchedulerAddress,
+  getSchedulerTimeoutMs,
+  validateEnv,
+} from "../src/config/env.js";
 
 test("validateEnv normalise le port et les origines CORS", () => {
   const config = validateEnv({
@@ -16,11 +20,8 @@ test("validateEnv normalise le port et les origines CORS", () => {
   });
 });
 
-test("getSchedulerUrl utilise le contrat local du scheduler par défaut", () => {
-  assert.equal(
-    getSchedulerUrl({}),
-    "http://localhost:3001/api/ai/process",
-  );
+test("getSchedulerAddress utilise le serveur gRPC local par défaut", () => {
+  assert.equal(getSchedulerAddress({}), "localhost:50051");
 });
 
 test("validateEnv autorise le port Angular local par défaut", () => {
@@ -32,11 +33,14 @@ test("validateEnv autorise le port Angular local par défaut", () => {
   assert.ok(config.corsOrigins.includes("http://localhost:4200"));
 });
 
-test("getSchedulerUrl reste compatible avec l'ancien nom de variable", () => {
-  assert.equal(
-    getSchedulerUrl({ autochedule_api_url: "http://scheduler:3001/api/ai/process" }),
-    "http://scheduler:3001/api/ai/process",
-  );
+test("la configuration gRPC accepte une adresse et un délai dédiés", () => {
+  const environment = {
+    SCHEDULER_GRPC_ADDRESS: "scheduler:6000",
+    SCHEDULER_GRPC_TIMEOUT_MS: "2500",
+  };
+
+  assert.equal(getSchedulerAddress(environment), "scheduler:6000");
+  assert.equal(getSchedulerTimeoutMs(environment), 2500);
 });
 
 test("validateEnv refuse une variable obligatoire absente", () => {
