@@ -5,6 +5,32 @@ const bcrypt = require('bcrypt');
 dotenv.config({ path: './.env' });
 
 async function main() {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminName = process.env.ADMIN_NAME || 'Administrateur GRM';
+
+  if (!adminEmail || !adminPassword) {
+    throw new Error('ADMIN_EMAIL et ADMIN_PASSWORD sont requis pour initialiser la base.');
+  }
+
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 12);
+  await prisma.utilisateur.upsert({
+    where: { email: adminEmail },
+    update: {
+      noms_complet: adminName,
+      motdepasse: adminPasswordHash,
+      type: 'admin',
+      estActif: true,
+    },
+    create: {
+      noms_complet: adminName,
+      email: adminEmail,
+      motdepasse: adminPasswordHash,
+      type: 'admin',
+      estActif: true,
+    },
+  });
+
   console.log("🚀 Liaison des symptômes aux spécialités existantes...");
 
   const nomsSpecialites = ["Pédiatrie", "Gynécologie", "Cardiologie", "ORL"];
