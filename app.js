@@ -22,6 +22,10 @@ app.use(cors({ origin: config.corsOrigins }));
 // === Documentation Swagger (doit être placée APRÈS la création de app)
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", service: "grm-api" });
+});
+
 // === Routes API centralisées ===
 app.use("/api", apiRoute);
 
